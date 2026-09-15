@@ -1,0 +1,491 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F1F2F6">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Courses</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --paper:#F1F2F6;
+    --paper-2:#FBFBFD;
+    --ink:#1B1D2A;
+    --rule:#DADEE7;
+    --bic:#2B2BD6;
+    --green:#12A150;
+    --grey:#98A1B2;
+    --danger:#C2334D;
+    --row-h:66px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:17px;
+    line-height:1.4;
+    overscroll-behavior-y:contain;
+  }
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  input,textarea{font:inherit;color:inherit}
+
+  .app{
+    max-width:560px;margin:0 auto;min-height:100%;
+    display:flex;flex-direction:column;
+    background:var(--paper);
+  }
+
+  /* ---------- en-tête ---------- */
+  header{
+    position:sticky;top:0;z-index:20;
+    background:var(--paper);
+    padding:18px 20px 12px;
+    padding-top:calc(18px + env(safe-area-inset-top));
+    border-bottom:1px solid var(--rule);
+  }
+  .titleline{display:flex;align-items:baseline;gap:12px}
+  h1{
+    font-family:Caveat,"Segoe Script",cursive;
+    font-weight:700;font-size:40px;line-height:.9;margin:0;
+    letter-spacing:.5px;
+  }
+  .count{font-size:15px;color:var(--grey);font-variant-numeric:tabular-nums;flex:1}
+  .count b{color:var(--ink);font-weight:600}
+  .menubtn{
+    width:40px;height:40px;border-radius:50%;
+    display:grid;place-items:center;margin:-6px -8px -6px 0;
+  }
+  .menubtn:active{background:#E4E7EF}
+  .menubtn span{display:block;width:4px;height:4px;border-radius:50%;background:var(--ink);
+    box-shadow:0 -7px 0 var(--ink),0 7px 0 var(--ink)}
+
+  .gauge{height:3px;background:var(--rule);border-radius:2px;margin-top:14px;overflow:hidden}
+  .gauge i{display:block;height:100%;width:0;background:var(--bic);border-radius:2px;
+    transition:width .45s cubic-bezier(.22,.9,.3,1)}
+  .gauge.full i{background:var(--green)}
+
+  /* ---------- menu ---------- */
+  .menu{
+    position:absolute;right:16px;top:calc(100% - 6px);
+    background:var(--paper-2);border:1px solid var(--rule);border-radius:14px;
+    box-shadow:0 14px 34px rgba(27,29,42,.16);
+    padding:6px;min-width:232px;display:none;
+  }
+  .menu.open{display:block}
+  .menu button{
+    display:flex;width:100%;align-items:center;gap:10px;
+    padding:12px 12px;border-radius:9px;text-align:left;font-size:16px;
+  }
+  .menu button:active{background:#EDEFF5}
+  .menu button.warn{color:var(--danger)}
+  .menu hr{border:0;border-top:1px solid var(--rule);margin:6px 8px}
+
+  /* ---------- liste ---------- */
+  main{flex:1;padding-bottom:140px}
+  ul{list-style:none;margin:0;padding:0}
+
+  li.row{
+    display:flex;align-items:center;gap:14px;
+    min-height:var(--row-h);padding:8px 14px 8px 18px;
+    border-bottom:1px solid var(--rule);
+    position:relative;
+  }
+  li.row:active{background:#E9ECF3}
+
+  .box{
+    flex:none;width:28px;height:28px;border-radius:9px;
+    border:2px solid #B9C0CE;background:var(--paper-2);
+    display:grid;place-items:center;position:relative;
+    transition:background .18s ease,border-color .18s ease,transform .18s ease;
+  }
+  .box::after{
+    content:"";position:absolute;inset:-3px;border-radius:12px;
+    border:2px solid var(--green);opacity:0;transform:scale(.7);
+  }
+  .tick{width:18px;height:18px;opacity:0;transition:opacity .12s ease}
+  .tick path{
+    fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;
+    stroke-dasharray:24;stroke-dashoffset:24;
+  }
+  .label{
+    flex:1;min-width:0;font-size:18px;font-weight:500;
+    position:relative;padding-right:2px;
+    transition:color .28s ease;
+  }
+  .label span{position:relative;display:inline}
+  .label span::after{
+    content:"";position:absolute;left:-2px;right:-2px;top:52%;height:2px;
+    background:currentColor;border-radius:2px;
+    transform:scaleX(0);transform-origin:left center;
+    transition:transform .3s cubic-bezier(.3,.8,.3,1);
+  }
+  .qty{
+    flex:none;font-size:15px;font-weight:600;color:var(--bic);
+    background:#E5E6FA;border-radius:999px;padding:3px 10px;
+    font-variant-numeric:tabular-nums;transition:all .28s ease;
+  }
+  .kill{
+    flex:none;width:40px;height:40px;display:grid;place-items:center;
+    color:#BEC5D2;border-radius:50%;
+  }
+  .kill:active{background:#E0E4EC;color:var(--danger)}
+  .kill svg{width:15px;height:15px;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
+
+  /* état pris */
+  li.done .box{background:var(--green);border-color:var(--green)}
+  li.done .tick{opacity:1}
+  li.done .tick path{stroke-dashoffset:0;transition:stroke-dashoffset .3s .04s cubic-bezier(.4,.9,.4,1)}
+  li.done .label{color:var(--grey)}
+  li.done .label span::after{transform:scaleX(1)}
+  li.done .qty{color:var(--grey);background:#E4E7EE}
+  li.done{background:#EAECF1}
+
+  li.flash .box{transform:scale(1.12)}
+  li.flash .box::after{animation:ring .45s ease-out}
+  @keyframes ring{
+    0%{opacity:.9;transform:scale(.7)}
+    100%{opacity:0;transform:scale(1.9)}
+  }
+
+  /* ---------- vide ---------- */
+  .empty{padding:64px 32px;text-align:center;color:var(--grey)}
+  .empty p{font-family:Caveat,cursive;font-size:30px;color:#6D7688;margin:0 0 6px}
+  .empty small{font-size:15px;line-height:1.5;display:block;max-width:26ch;margin:0 auto}
+
+  /* ---------- barre d'ajout ---------- */
+  .composer{
+    position:fixed;left:0;right:0;bottom:0;z-index:30;
+    background:linear-gradient(to top,var(--paper) 74%,rgba(241,242,246,0));
+    padding:22px 16px calc(16px + env(safe-area-inset-bottom));
+    max-width:560px;margin:0 auto;
+  }
+  .paste{
+    display:block;margin:0 auto 10px;font-size:15px;color:var(--bic);
+    font-weight:600;padding:6px 12px;border-radius:999px;
+  }
+  .paste:active{background:#E1E3F8}
+  .bar{
+    display:flex;gap:10px;align-items:center;
+    background:var(--paper-2);border:1px solid var(--rule);
+    border-radius:16px;padding:7px 7px 7px 16px;
+    box-shadow:0 8px 24px rgba(27,29,42,.1);
+  }
+  .bar:focus-within{border-color:var(--bic);box-shadow:0 8px 24px rgba(43,43,214,.16)}
+  .bar input{flex:1;border:0;outline:0;background:none;padding:10px 0;font-size:17px;min-width:0}
+  .bar input::placeholder{color:#A8B0BE}
+  .add{
+    flex:none;width:46px;height:46px;border-radius:13px;background:var(--bic);
+    display:grid;place-items:center;transition:transform .12s ease,opacity .2s;
+  }
+  .add:active{transform:scale(.93)}
+  .add svg{width:22px;height:22px;stroke:#fff;stroke-width:2.6;stroke-linecap:round}
+
+  /* ---------- feuille coller ---------- */
+  .scrim{
+    position:fixed;inset:0;z-index:40;background:rgba(27,29,42,.42);
+    display:none;align-items:flex-end;justify-content:center;
+  }
+  .scrim.open{display:flex}
+  .sheet{
+    width:100%;max-width:560px;background:var(--paper);
+    border-radius:22px 22px 0 0;padding:22px 20px calc(20px + env(safe-area-inset-bottom));
+    animation:up .26s cubic-bezier(.22,.9,.3,1);
+  }
+  @keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .sheet h2{font-family:Caveat,cursive;font-size:30px;margin:0 0 4px;font-weight:700}
+  .sheet p{margin:0 0 14px;font-size:15px;color:#6D7688}
+  .sheet textarea{
+    width:100%;height:190px;resize:none;border:1px solid var(--rule);border-radius:14px;
+    background:var(--paper-2);padding:14px;outline:0;font-size:17px;line-height:1.7;
+  }
+  .sheet textarea:focus{border-color:var(--bic)}
+  .sheetbtns{display:flex;gap:10px;margin-top:14px}
+  .sheetbtns button{flex:1;padding:15px;border-radius:14px;font-weight:600;font-size:17px}
+  .ghost{border:1px solid var(--rule)}
+  .solid{background:var(--bic);color:#fff}
+  .solid:active{background:#2222AE}
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:fixed;left:50%;bottom:118px;z-index:50;
+    transform:translate(-50%,14px);opacity:0;pointer-events:none;
+    background:var(--ink);color:#fff;font-size:15px;font-weight:500;
+    padding:11px 17px;border-radius:999px;display:flex;align-items:center;gap:9px;
+    box-shadow:0 10px 26px rgba(27,29,42,.3);
+    transition:opacity .22s ease,transform .22s ease;
+    max-width:86vw;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .toast svg{width:16px;height:16px;flex:none;stroke:#4BE08B;stroke-width:3;
+    stroke-linecap:round;stroke-linejoin:round;fill:none}
+  .toast b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .toast button{color:#8E96FF;font-weight:600;padding-left:4px}
+
+  :focus-visible{outline:3px solid var(--bic);outline-offset:2px;border-radius:6px}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+  }
+</style>
+
+<div class="app">
+  <header>
+    <div class="titleline">
+      <h1>Courses</h1>
+      <button class="menubtn" id="menubtn" aria-label="Options de la liste"><span></span></button>
+    </div>
+    <div class="count" id="count">Liste vide</div>
+    <div class="gauge" id="gauge"><i></i></div>
+
+    <div class="menu" id="menu" role="menu">
+      <button id="m-paste" role="menuitem">Coller une liste</button>
+      <button id="m-hide" role="menuitem">Masquer les articles pris</button>
+      <hr>
+      <button id="m-uncheck" role="menuitem">Tout remettre à acheter</button>
+      <button id="m-clearDone" role="menuitem">Retirer les articles pris</button>
+      <button id="m-clearAll" class="warn" role="menuitem">Vider la liste</button>
+    </div>
+  </header>
+
+  <main>
+    <ul id="list"></ul>
+    <div class="empty" id="empty">
+      <p>Rien sur la liste</p>
+      <small>Tapez un article en bas, ou collez toute votre liste d'un coup.</small>
+    </div>
+  </main>
+</div>
+
+<div class="composer">
+  <button class="paste" id="pastebtn">Coller une liste</button>
+  <div class="bar">
+    <input id="entry" placeholder="Ajouter un article" autocomplete="off"
+           enterkeyhint="done" aria-label="Nom de l'article">
+    <button class="add" id="addbtn" aria-label="Ajouter à la liste">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="scrim" id="scrim">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-t">
+    <h2 id="sheet-t">Coller une liste</h2>
+    <p>Un article par ligne. Les quantités sont reconnues : « 2 citrons », « lait x3 ».</p>
+    <textarea id="bulk" placeholder="6 œufs&#10;lait demi-écrémé&#10;pain de campagne&#10;tomates x4"></textarea>
+    <div class="sheetbtns">
+      <button class="ghost" id="cancel">Annuler</button>
+      <button class="solid" id="confirm">Ajouter à la liste</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ---------- stockage (fonctionne dans Claude et en autonome) ---------- */
+const KEY = "courses:v1";
+const store = {
+  async get(){
+    try{
+      if(window.storage?.get){ const r = await window.storage.get(KEY); return r ? JSON.parse(r.value) : null; }
+      const raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null;
+    }catch(e){ return null; }
+  },
+  async set(v){
+    try{
+      const s = JSON.stringify(v);
+      if(window.storage?.set){ await window.storage.set(KEY, s); return; }
+      localStorage.setItem(KEY, s);
+    }catch(e){}
+  }
+};
+
+let state = { items: [], hideDone: false };
+let lastUndo = null;
+
+const $ = s => document.querySelector(s);
+const list = $("#list"), empty = $("#empty"), gauge = $("#gauge"), countEl = $("#count");
+
+/* ---------- utilitaires ---------- */
+const uid = () => Math.random().toString(36).slice(2, 9);
+
+function parseLine(line){
+  let t = line.trim().replace(/^[-–•*\u2022]\s*/, "").replace(/^\[.?\]\s*/, "");
+  if(!t) return null;
+  let qty = 1, m;
+  if((m = t.match(/^(\d{1,3})\s*[x×]?\s+(.+)$/))){ qty = +m[1]; t = m[2]; }
+  else if((m = t.match(/^(.+?)\s*[x×]\s*(\d{1,3})$/i))){ t = m[1]; qty = +m[2]; }
+  t = t.trim();
+  if(!t) return null;
+  return { id: uid(), name: t.charAt(0).toUpperCase() + t.slice(1), qty, done: false };
+}
+
+function save(){ store.set(state); }
+
+/* ---------- rendu ---------- */
+function render(){
+  const items = state.hideDone ? state.items.filter(i => !i.done) : state.items;
+  list.innerHTML = "";
+
+  for(const it of items){
+    const li = document.createElement("li");
+    li.className = "row" + (it.done ? " done" : "");
+    li.dataset.id = it.id;
+    li.setAttribute("role", "checkbox");
+    li.setAttribute("aria-checked", String(it.done));
+    li.tabIndex = 0;
+    li.innerHTML = `
+      <span class="box"><svg class="tick" viewBox="0 0 24 24"><path d="M5 12.5l4.4 4.4L19 7.6"/></svg></span>
+      <span class="label"><span>${esc(it.name)}</span></span>
+      ${it.qty > 1 ? `<span class="qty">×${it.qty}</span>` : ""}
+      <button class="kill" aria-label="Retirer ${esc(it.name)}">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>`;
+    list.appendChild(li);
+  }
+
+  const total = state.items.length;
+  const done = state.items.filter(i => i.done).length;
+  empty.style.display = total ? "none" : "block";
+  countEl.textContent = total === 0 ? "Liste vide"
+    : done === total ? "Tout est pris 🎉"
+    : `${done} pris sur ${total} · reste ${total - done}`;
+  gauge.querySelector("i").style.width = total ? (done / total * 100) + "%" : "0%";
+  gauge.classList.toggle("full", total > 0 && done === total);
+  $("#m-hide").textContent = state.hideDone ? "Afficher les articles pris" : "Masquer les articles pris";
+}
+
+function esc(s){ return s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* ---------- actions ---------- */
+function toggle(id, li){
+  const it = state.items.find(i => i.id === id);
+  if(!it) return;
+  it.done = !it.done;
+  li.classList.toggle("done", it.done);
+  li.setAttribute("aria-checked", String(it.done));
+  if(it.done){
+    li.classList.add("flash");
+    setTimeout(() => li.classList.remove("flash"), 460);
+    if(navigator.vibrate) navigator.vibrate(14);
+    toast(`${it.name} — pris`, true);
+    if(state.hideDone) setTimeout(render, 420);
+  }else{
+    toast(`${it.name} — à acheter`, false);
+  }
+  render();
+  save();
+}
+
+function remove(id){
+  const idx = state.items.findIndex(i => i.id === id);
+  if(idx < 0) return;
+  const [gone] = state.items.splice(idx, 1);
+  lastUndo = () => { state.items.splice(idx, 0, gone); render(); save(); };
+  render(); save();
+  toast(`${gone.name} retiré`, false, true);
+}
+
+function add(text){
+  const it = parseLine(text);
+  if(!it) return false;
+  state.items.push(it);
+  render(); save();
+  return true;
+}
+
+/* ---------- toast ---------- */
+let toastTimer;
+function toast(msg, ok, undo){
+  const t = $("#toast");
+  t.innerHTML = (ok ? `<svg viewBox="0 0 24 24"><path d="M5 12.5l4.4 4.4L19 7.6"/></svg>` : "") +
+                `<b>${esc(msg)}</b>` + (undo ? `<button id="undo">Annuler</button>` : "");
+  t.classList.add("show");
+  if(undo) $("#undo").onclick = () => { lastUndo?.(); lastUndo = null; t.classList.remove("show"); };
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), undo ? 4200 : 1700);
+}
+
+/* ---------- événements ---------- */
+list.addEventListener("click", e => {
+  const li = e.target.closest("li.row");
+  if(!li) return;
+  if(e.target.closest(".kill")){ remove(li.dataset.id); return; }
+  toggle(li.dataset.id, li);
+});
+list.addEventListener("keydown", e => {
+  if(e.key !== " " && e.key !== "Enter") return;
+  const li = e.target.closest("li.row");
+  if(li){ e.preventDefault(); toggle(li.dataset.id, li); }
+});
+
+const entry = $("#entry");
+function submitEntry(){
+  if(add(entry.value)){ entry.value = ""; entry.focus(); }
+}
+$("#addbtn").addEventListener("click", submitEntry);
+entry.addEventListener("keydown", e => { if(e.key === "Enter") submitEntry(); });
+
+/* menu */
+const menu = $("#menu");
+$("#menubtn").addEventListener("click", e => { e.stopPropagation(); menu.classList.toggle("open"); });
+document.addEventListener("click", () => menu.classList.remove("open"));
+menu.addEventListener("click", e => e.stopPropagation());
+
+function closeMenu(){ menu.classList.remove("open"); }
+$("#m-hide").onclick = () => { state.hideDone = !state.hideDone; closeMenu(); render(); save(); };
+$("#m-uncheck").onclick = () => { state.items.forEach(i => i.done = false); closeMenu(); render(); save(); toast("Tout est à acheter", false); };
+$("#m-clearDone").onclick = () => {
+  const before = state.items;
+  state.items = state.items.filter(i => !i.done);
+  lastUndo = () => { state.items = before; render(); save(); };
+  closeMenu(); render(); save(); toast("Articles pris retirés", false, true);
+};
+$("#m-clearAll").onclick = () => {
+  const before = state.items;
+  state.items = [];
+  lastUndo = () => { state.items = before; render(); save(); };
+  closeMenu(); render(); save(); toast("Liste vidée", false, true);
+};
+
+/* feuille coller */
+const scrim = $("#scrim"), bulk = $("#bulk");
+function openSheet(){ scrim.classList.add("open"); closeMenu(); setTimeout(() => bulk.focus(), 120); }
+function closeSheet(){ scrim.classList.remove("open"); bulk.value = ""; }
+$("#pastebtn").onclick = openSheet;
+$("#m-paste").onclick = openSheet;
+$("#cancel").onclick = closeSheet;
+scrim.addEventListener("click", e => { if(e.target === scrim) closeSheet(); });
+$("#confirm").onclick = () => {
+  const added = bulk.value.split(/\r?\n/).map(parseLine).filter(Boolean);
+  if(added.length){
+    state.items.push(...added);
+    render(); save();
+    toast(`${added.length} article${added.length > 1 ? "s" : ""} ajouté${added.length > 1 ? "s" : ""}`, true);
+  }
+  closeSheet();
+};
+
+/* installable depuis Chrome : Menu ▸ Ajouter à l'écran d'accueil */
+try{
+  const manifest = {
+    name: "Liste de courses", short_name: "Courses",
+    start_url: ".", display: "standalone",
+    background_color: "#F1F2F6", theme_color: "#F1F2F6"
+  };
+  const link = document.createElement("link");
+  link.rel = "manifest";
+  link.href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type:"application/json"}));
+  document.head.appendChild(link);
+}catch(e){}
+
+/* démarrage */
+(async () => {
+  const saved = await store.get();
+  if(saved && Array.isArray(saved.items)) state = { hideDone: !!saved.hideDone, items: saved.items };
+  render();
+})();
+</script>
